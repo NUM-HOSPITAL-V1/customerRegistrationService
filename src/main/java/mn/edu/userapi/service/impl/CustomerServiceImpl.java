@@ -89,10 +89,12 @@ public class CustomerServiceImpl implements CustomerService {
         customer.setProfession(dto.getProfession());
         customer.setSisiId(dto.getSisiId());
         customer.setUserId(dto.getUserId());
+        customer.setNationalId(dto.getNationalId());
 
         // Encrypt sensitive data
         customer.setNationalId(cryptoUtil.encrypt(dto.getNationalId()));
 
+        logger.info("requestDTO={}, requestCustomer={}", dto, customer);
         return customer;
     }
 

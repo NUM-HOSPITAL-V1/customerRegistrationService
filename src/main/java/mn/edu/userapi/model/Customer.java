@@ -12,6 +12,13 @@ import java.time.LocalDate;
 
 @Entity
 @Table(name = "customers")
+@NamedStoredProcedureQuery(
+        name = "create_user_id",
+        procedureName = "create_user_id",
+        parameters = {
+                @StoredProcedureParameter(mode = ParameterMode.OUT, name = "result", type = String.class)
+        }
+)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -30,14 +37,13 @@ public class Customer {
     private String firstName;  // Нэр
 
     @Column(nullable = false)
-    private LocalDate dateOfBirth;  // Төрсөн он, сар, өдөр
+    private String dateOfBirth;  // Төрсөн он, сар, өдөр
 
     @Column(nullable = false)
-    private Integer age;  // Нас
+    private String age;  // Нас
 
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Gender gender;  // Хүйс
+    private String gender;  // Хүйс
 
     @Column(nullable = false)
     private String phoneNumber;  // Утасны дугаар
@@ -56,9 +62,8 @@ public class Customer {
     @Column(nullable = false)
     private String addressDetail;  // Гудамж/Байр/Тоот
 
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Profession profession;  // Мэргэжил
+    private String profession;  // Мэргэжил
 
     @Column(nullable = false)
     private String sisiId;  // User ID from the original code
@@ -98,27 +103,27 @@ public class Customer {
         this.firstName = firstName;
     }
 
-    public LocalDate getDateOfBirth() {
+    public String getDateOfBirth() {
         return dateOfBirth;
     }
 
-    public void setDateOfBirth(LocalDate dateOfBirth) {
+    public void setDateOfBirth(String dateOfBirth) {
         this.dateOfBirth = dateOfBirth;
     }
 
-    public Integer getAge() {
+    public String getAge() {
         return age;
     }
 
-    public void setAge(Integer age) {
+    public void setAge(String age) {
         this.age = age;
     }
 
-    public Gender getGender() {
+    public String getGender() {
         return gender;
     }
 
-    public void setGender(Gender gender) {
+    public void setGender(String gender) {
         this.gender = gender;
     }
 
@@ -170,11 +175,11 @@ public class Customer {
         this.addressDetail = addressDetail;
     }
 
-    public Profession getProfession() {
+    public String getProfession() {
         return profession;
     }
 
-    public void setProfession(Profession profession) {
+    public void setProfession(String profession) {
         this.profession = profession;
     }
 

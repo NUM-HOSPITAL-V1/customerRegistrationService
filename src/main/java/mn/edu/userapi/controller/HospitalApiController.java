@@ -1,5 +1,10 @@
 package mn.edu.userapi.controller;
 
+import com.example.grpc.CardReaderServiceGrpc;
+import com.example.grpc.CardRequest;
+import com.example.grpc.CardResponse;
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +15,7 @@ import mn.edu.userapi.model.enums.Profession;
 import mn.edu.userapi.service.CustomerService;
 import mn.edu.userapi.util.CryptoUtil;
 import mn.edu.userapi.util.HttpClientUtil;
+import javax.annotation.Generated;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -54,19 +60,27 @@ public class HospitalApiController {
         }
     }
 
-    @GetMapping("/register")
-    public ResponseEntity<JsonObject> onRegister() {
+    @PostMapping("/read/card")
+    public ResponseEntity<JsonObject> onReadCardFromGrpc() {
         try {
-            Map<String, String> headers = new HashMap<>();
-            headers.put("Content-Type", "application/json");
-            JsonObject jwt = new JsonObject(httpClientUtil.httpRequest("", null, "POST", headers));
+            ManagedChannel channel = ManagedChannelBuilder.forAddress("172.25.64.1", 5000)
+                    .usePlaintext()
+                    .build();
+            CardReaderServiceGrpc.CardReaderServiceBlockingStub stub = CardReaderServiceGrpc.newBlockingStub(channel);
 
-            JsonObject jres = new JsonObject();
-            // Process jwt if needed
+            CardRequest request = CardRequest.newBuilder()
+                    .setIncludeImage(false)
+                    .build();
+            CardResponse response = stub.readCard(request);
 
-            return ResponseEntity.ok(jres);
+            JsonObject result = new JsonObject();
+            response.getFieldsMap().forEach(result::put);
+
+            channel.shutdown();
+
+            return ResponseEntity.ok(result);
         } catch (Exception e) {
-            logger.error("Error in register by national ID: {}", e.getMessage());
+            logger.error("Error calling gRPC server: {}", e.getMessage());
             return ResponseEntity.internalServerError().build();
         }
     }
@@ -123,27 +137,40 @@ public class HospitalApiController {
     }
 
     @PostMapping("/save/customer")
-    public ResponseEntity<JsonObject> onSave(@RequestBody JsonObject request) {
+    public ResponseEntity<JsonObject> onSave(@RequestBody CustomerDto request) {
         try {
             String customerId = customerService.createCustomerId();
+            logger.info("id={}", customerId);
 
             CustomerDto customerDto = new CustomerDto();
             customerDto.setCustomerId(customerId);
-            customerDto.setSurname(request.getString("surname"));
-            customerDto.setFirstName(request.getString("firstName"));
-            customerDto.setDateOfBirth(LocalDate.parse(request.getString("dateOfBirth")));
-            customerDto.setAge(request.getInteger("age"));
-            customerDto.setGender(Gender.valueOf(request.getString("gender")));
-            customerDto.setPhoneNumber(request.getString("phoneNumber"));
-            customerDto.setEmail(request.getString("email", ""));
-            customerDto.setProvince(request.getString("province"));
-            customerDto.setDistrict(request.getString("district"));
-            customerDto.setSubdistrict(request.getString("subdistrict"));
-            customerDto.setAddressDetail(request.getString("addressDetail"));
-            customerDto.setProfession(Profession.valueOf(request.getString("profession")));
-            customerDto.setSisiId(request.getString("sisiId"));
-            customerDto.setUserId(request.getString("userId"));
-            customerDto.setNationalId(request.getString("nationalId"));
+            customerDto.setSurname(request.getSurname());
+            customerDto.setFirstName(request.getFirstName());
+
+//            customerDto.setDateOfBirth(LocalDate.parse(request.getString("dateOfBirth")));
+            customerDto.setDateOfBirth(request.getDateOfBirth());
+
+//            customerDto.setAge(request.getInteger("age"));
+            customerDto.setAge(request.getAge());
+
+//            customerDto.setGender(Gender.valueOf(request.getString("gender")));
+            customerDto.setGender(request.getGender());
+
+            customerDto.setPhoneNumber(request.getPhoneNumber());
+            customerDto.setEmail(request.getEmail());
+            customerDto.setProvince(request.getProvince());
+            customerDto.setDistrict(request.getDistrict());
+            customerDto.setSubdistrict(request.getSubdistrict());
+            customerDto.setAddressDetail(request.getAddressDetail());
+
+//            customerDto.setProfession(Profession.valueOf(request.getString("profession")));
+            customerDto.setProfession(request.getProfession());
+
+            customerDto.setSisiId(request.getSisiId());
+            customerDto.setUserId(request.getUserId());
+            customerDto.setNationalId(request.getNationalId());
+
+            logger.info("customerDto={}", customerDto);
 
             if (customerService.saveCustomer(customerDto)) {
                 return ResponseEntity.ok(new JsonObject().put("message", "Customer saved successfully").put("code", "200"));

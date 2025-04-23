@@ -16,16 +16,16 @@ public class CustomerDto {
     private String nationalId;
     private String surname;
     private String firstName;
-    private LocalDate dateOfBirth;
-    private Integer age;
-    private Gender gender;
+    private String dateOfBirth;
+    private String age;
+    private String gender;
     private String phoneNumber;
     private String email;
     private String province;
     private String district;
     private String subdistrict;
     private String addressDetail;
-    private Profession profession;
+    private String profession;
     private String sisiId;
     private String userId;
 
@@ -45,15 +45,15 @@ public class CustomerDto {
         return firstName;
     }
 
-    public LocalDate getDateOfBirth() {
+    public String getDateOfBirth() {
         return dateOfBirth;
     }
 
-    public Integer getAge() {
+    public String getAge() {
         return age;
     }
 
-    public Gender getGender() {
+    public String getGender() {
         return gender;
     }
 
@@ -81,7 +81,7 @@ public class CustomerDto {
         return addressDetail;
     }
 
-    public Profession getProfession() {
+    public String getProfession() {
         return profession;
     }
 
@@ -109,15 +109,15 @@ public class CustomerDto {
         this.firstName = firstName;
     }
 
-    public void setDateOfBirth(LocalDate dateOfBirth) {
+    public void setDateOfBirth(String dateOfBirth) {
         this.dateOfBirth = dateOfBirth;
     }
 
-    public void setAge(Integer age) {
+    public void setAge(String age) {
         this.age = age;
     }
 
-    public void setGender(Gender gender) {
+    public void setGender(String gender) {
         this.gender = gender;
     }
 
@@ -145,7 +145,7 @@ public class CustomerDto {
         this.addressDetail = addressDetail;
     }
 
-    public void setProfession(Profession profession) {
+    public void setProfession(String profession) {
         this.profession = profession;
     }
 

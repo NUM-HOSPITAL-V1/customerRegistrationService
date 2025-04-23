@@ -13,7 +13,7 @@ import java.util.Optional;
 @Repository
 public interface CustomerRepository extends JpaRepository<Customer, String> {
 
-    @Procedure(name = "create_customer_id")
+    @Query(value = "SELECT sp_create_newid()", nativeQuery = true)
     String createCustomerId();
     // [A-Z][000-999][A-Z][000-999][A-Z][000-999]
 

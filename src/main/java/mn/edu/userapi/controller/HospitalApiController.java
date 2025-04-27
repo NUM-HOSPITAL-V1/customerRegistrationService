@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import io.vertx.core.cli.annotations.Summary;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +34,7 @@ import java.time.LocalDate;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/api/v1/hospital")
@@ -231,6 +233,44 @@ public class HospitalApiController {
 
         } catch (Exception e) {
             logger.error("Error in saving customer: {}", e.getMessage());
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @Operation(summary = "Хэрэглэгч устгах", description = "Хэрэглэгчийн мэдээллийг системээс устгах")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Хэрэглэгчийн мэдээллийг амжилттай устгалаа",
+                    content = @Content(schema = @Schema(implementation = JsonObject.class))),
+            @ApiResponse(responseCode = "500", description = "Серверийн алдаа")
+    })
+    @DeleteMapping("/delete/customer/{id}")
+    public ResponseEntity<JsonObject> onDelete(
+            @Parameter(description = "Хэрэглэгчийн ID", required = true)
+            @PathVariable(name = "id") String customerId) throws Exception {
+        try{
+            customerService.deleteCustomer(customerId);
+            return ResponseEntity.ok().build();
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @Operation(summary = "Хэрэглэгчийн мэдээлэл засах", description = "Систем дэх хэрэглэгчийн мэдээллийг засах")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Хэрэглэгчийн мэдээллийг амжилттай засварлалаа",
+                    content = @Content(schema = @Schema(implementation = JsonObject.class))),
+            @ApiResponse(responseCode = "500", description = "Серверийн алдаа")
+    })
+    @PostMapping("/edit/customer")
+    public ResponseEntity<JsonObject> obEdit(
+            @RequestBody CustomerDto request) throws Exception {
+        try {
+            String customerId = request.getCustomerId();
+            customerService.updateCustomer(customerId, request);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
         }
     }

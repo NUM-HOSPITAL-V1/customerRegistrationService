@@ -14,4 +14,6 @@ public interface CustomerService {
     boolean saveCustomer(CustomerDto customerDto) throws Exception;
     Customer mapDtoToEntity(CustomerDto dto) throws Exception;
     CustomerDto mapEntityToDto(Customer customer) throws Exception;
+    void deleteCustomer(String id) throws Exception;
+    void updateCustomer(String id, CustomerDto customerDto) throws Exception;
 }

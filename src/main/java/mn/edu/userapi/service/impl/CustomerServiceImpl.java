@@ -122,4 +122,32 @@ public class CustomerServiceImpl implements CustomerService {
 
         return dto;
     }
+
+    @Override
+    public void deleteCustomer(String id) throws Exception {
+        customerRepository.deleteById(id);
+    }
+
+    @Override
+    public void updateCustomer(String id, CustomerDto customerDto) throws Exception {
+        Customer existingCustomer = customerRepository.fetchCustomer(id)
+                .orElseThrow(() -> new Exception("Customer with id " + id + " not found."));
+
+        existingCustomer.setNationalId(customerDto.getNationalId());
+        existingCustomer.setAge(customerDto.getAge());
+        existingCustomer.setDistrict(customerDto.getDistrict());
+        existingCustomer.setEmail(customerDto.getEmail());
+        existingCustomer.setAddressDetail(customerDto.getAddressDetail());
+        existingCustomer.setDateOfBirth(customerDto.getDateOfBirth());
+        existingCustomer.setGender(customerDto.getGender());
+        existingCustomer.setFirstName(customerDto.getFirstName());
+        existingCustomer.setPhoneNumber(customerDto.getPhoneNumber());
+        existingCustomer.setProfession(customerDto.getProfession());
+        existingCustomer.setSisiId(customerDto.getSisiId());
+        existingCustomer.setProvince(customerDto.getProvince());
+        existingCustomer.setSubdistrict(customerDto.getSubdistrict());
+        existingCustomer.setSurname(customerDto.getSurname());
+
+        customerRepository.save(existingCustomer);
+    }
 }

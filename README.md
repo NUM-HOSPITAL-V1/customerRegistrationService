@@ -242,21 +242,22 @@
 - **Зорилго:** Шинэ хэрэглэгчийн мэдээллийг эмчээс системд бүртгэх
 - **Бие (Body):**
   ```json
-  {
-    "surname": "Бат",
-    "firstName": "Болд",
-    "dateOfBirth": "1990-01-01",
-    "age": "35",
-    "gender": "MALE",
-    "phoneNumber": "99112233",
-    "email": "bold@example.com",
-    "province": "Улаанбаатар",
-    "district": "Баянгол",
-    "subdistrict": "1-р хороо",
-    "addressDetail": "23-р байр 5 тоот",
-    "profession": "DOCTOR",
-    "nationalId": "УД92010199"
-  }
+{
+  "nationalId": "ар80808088",
+  "surname": "бат12",
+  "firstName": "болд222",
+  "dateOfBirth": "1990-01-01",
+  "age": "35",
+  "gender": "MALE",
+  "phoneNumber": "00000003",
+  "email": "string@gmail.com",
+  "province": "Улаанбаатар",
+  "district": "Баянгол",
+  "subdistrict": "1-р хороо",
+  "addressDetail": "23-р байр 5 тоот",
+  "profession": "DOCTOR",
+  "sisiId": "string"
+}
   ```
 - **Амжилттай хариу (200):**
   ```json

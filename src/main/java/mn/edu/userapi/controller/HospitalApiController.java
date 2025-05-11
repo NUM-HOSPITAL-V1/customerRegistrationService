@@ -289,11 +289,13 @@ public class HospitalApiController {
 
             String authResp = httpClientUtil.httpRequest(authUrl, body.toString(), "POST", headers);
 
-            customerDto.setUserId(authResp);
+            JsonObject jResp = new JsonObject(authResp);
+
+            customerDto.setUserId(jResp.getString("id"));
             customerDto.setCustomerId(customerId);
 
             if (customerService.saveCustomer(customerDto)) {
-                return ResponseEntity.ok(new JsonObject().put("message", "Customer saved successfully").put("code", "200").put("customerId", customerId));
+                return ResponseEntity.ok(new JsonObject().put("message", "Customer saved successfully").put("code", "200"));
             } else {
                 return ResponseEntity.internalServerError().build();
             }

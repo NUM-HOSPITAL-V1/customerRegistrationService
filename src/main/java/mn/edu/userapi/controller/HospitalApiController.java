@@ -16,6 +16,7 @@ import io.vertx.core.cli.annotations.Summary;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import mn.edu.userapi.dto.CustomerDto;
 import mn.edu.userapi.model.Customer;
 import mn.edu.userapi.model.enums.Gender;
@@ -26,6 +27,8 @@ import mn.edu.userapi.util.HttpClientUtil;
 import javax.annotation.Generated;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -40,6 +43,7 @@ import java.util.NoSuchElementException;
 @RequestMapping("/api/v1/hospital")
 @RequiredArgsConstructor
 @Tag(name = "Hospital API", description = "Эмнэлгийн системийн API интерфейс")
+@Slf4j
 public class HospitalApiController {
     private final Logger logger = LoggerFactory.getLogger(HospitalApiController.class);
 
@@ -47,11 +51,16 @@ public class HospitalApiController {
     private final CryptoUtil cryptoUtil;
     private final HttpClientUtil httpClientUtil;
 
-    @Operation(summary = "Хайлт хийх", description = "Өгөгдсөн хайлтын параметрээр хэрэглэгчийн мэдээллийг хайх")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Хайлт амжилттай",
-                    content = @Content(schema = @Schema(implementation = JsonObject.class))),
-            @ApiResponse(responseCode = "500", description = "Серверийн алдаа")
+    @Value("${auht.url}")
+    private String authUrl;
+
+    @Operation(
+            summary = "Хэрэглэгч хайх",
+            description = "Текстээр хэрэглэгчийн өгөгдлөөс хайлт хийнэ"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Амжилттай", content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "500", description = "Серверийн алдаа", content = @Content)
     })
     @PostMapping("/search")
     public ResponseEntity<JsonObject> onSearch(
@@ -167,7 +176,7 @@ public class HospitalApiController {
             Customer customer = customerService.getCustomerById(id);
 
             if (customer == null) {
-                return ResponseEntity.ok(new JsonObject().put("message", "No customer found").put("code", "403"));
+                return ResponseEntity.status(HttpStatus.NO_CONTENT).body(new JsonObject().put("message", "Тийм ID тай хэрэглэгч олдсонгүй").put("code", "204"));
             }
 
             CustomerDto customerDto = customerService.mapEntityToDto(customer);
@@ -201,7 +210,8 @@ public class HospitalApiController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Хэрэглэгч амжилттай бүртгэгдлээ",
                     content = @Content(schema = @Schema(implementation = JsonObject.class))),
-            @ApiResponse(responseCode = "500", description = "Серверийн алдаа")
+            @ApiResponse(responseCode = "500", description = "Серверийн алдаа"),
+            @ApiResponse(responseCode = "400", description = "Хэрэглэгч бүртгэлтэй байна")
     })
     @PostMapping("/save/customer")
     public ResponseEntity<JsonObject> onSave(
@@ -236,17 +246,84 @@ public class HospitalApiController {
             logger.info("customerDto={}", customerDto);
 
             if(customerService.checkCustomer(request.getNationalId())) {
-                return ResponseEntity.badRequest().build();
+                return ResponseEntity.badRequest().body(new JsonObject().put("message", "Тийм регистрийн дугаартай хэрэглэгч бүртгэлтэй байна."));
             }
 
             if (customerService.saveCustomer(customerDto)) {
-                return ResponseEntity.ok(new JsonObject().put("message", "Customer saved successfully").put("code", "200"));
+                return ResponseEntity.ok(new JsonObject().put("message", "Customer saved successfully").put("code", "200").put("customerId", customerId));
             } else {
                 return ResponseEntity.internalServerError().build();
             }
 
         } catch (Exception e) {
             logger.error("Error in saving customer: {}", e.getMessage());
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @Operation(summary = "Хэрэглэгч эмчээс бүртгэх", description = "Шинэ хэрэглэгчийн мэдээллийг эмчээс системд бүртгэх")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Хэрэглэгч амжилттай бүртгэгдлээ",
+                    content = @Content(schema = @Schema(implementation = JsonObject.class))),
+            @ApiResponse(responseCode = "500", description = "Серверийн алдаа"),
+            @ApiResponse(responseCode = "400", description = "Бүртгэлтэй хэрэглэгч байна.")
+    })
+    @PostMapping("/create/customer")
+    public ResponseEntity<?> onCreate(
+            @RequestBody CustomerDto customerDto
+    ) throws Exception {
+        try {
+            if(customerService.checkCustomer(customerDto.getNationalId())){
+                return ResponseEntity.badRequest().body(new JsonObject().put("message", "Тийм регистрийн дугаартай хэрэглэгч бүртгэлтэй байна."));
+            }
+            String customerId = customerService.createCustomerId();
+
+            JsonObject body = new JsonObject();
+            body.put("sisiId", customerId);
+            body.put("phoneNumber", customerDto.getPhoneNumber());
+            body.put("email", customerDto.getEmail());
+            body.put("roles", new String[]{"ROLE_USER"});
+
+            Map<String, String> headers = new HashMap<>();
+            headers.put("Content-Type", "application/json");
+
+            String authResp = httpClientUtil.httpRequest(authUrl, body.toString(), "POST", headers);
+
+            customerDto.setUserId(authResp);
+            customerDto.setCustomerId(customerId);
+
+            if (customerService.saveCustomer(customerDto)) {
+                return ResponseEntity.ok(new JsonObject().put("message", "Customer saved successfully").put("code", "200").put("customerId", customerId));
+            } else {
+                return ResponseEntity.internalServerError().build();
+            }
+
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+    @Operation(summary = "Регистрийн дугаараас нас, хүйс авах", description = "Регистрийн дугаараас хэрэглэгчийн хүйс болон насыг авах")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Амжилттай",
+                    content = @Content(schema = @Schema(implementation = JsonObject.class))),
+            @ApiResponse(responseCode = "500", description = "Серверийн алдаа")
+    })
+    @PostMapping("/retrieve")
+    public ResponseEntity<?> onRetrieve(
+            @RequestBody String national_id) throws Exception {
+        try {
+            String month = national_id.substring(4,5);
+            int month_int = Integer.parseInt(month);
+            String born_year = national_id.substring(2,3);
+            int born_year_int = (month_int > 20) ? 2000 + Integer.parseInt(born_year) : 1900 + Integer.parseInt(born_year);
+            String gender = (Integer.parseInt(national_id.substring(8,8))%2 == 1) ? "MALE" : "FEMALE";
+
+            int age = LocalDate.now().getYear() - born_year_int;
+
+            JsonObject jresp = new JsonObject().put("age", age).put("gender", gender);
+            return ResponseEntity.ok(jresp);
+        } catch (Exception e) {
+            logger.error("error in retrieve[error={}]",e.getMessage());
             return ResponseEntity.internalServerError().build();
         }
     }

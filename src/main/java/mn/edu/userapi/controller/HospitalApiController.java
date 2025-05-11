@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.KeyPair;
@@ -40,7 +41,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 
 @RestController
-@RequestMapping("/api/v1/hospital")
+@RequestMapping("/customer/registration")
 @RequiredArgsConstructor
 @Tag(name = "Hospital API", description = "Эмнэлгийн системийн API интерфейс")
 @Slf4j
@@ -147,6 +148,7 @@ public class HospitalApiController {
             @ApiResponse(responseCode = "500", description = "Серверийн алдаа")
     })
     @GetMapping("/fetch")
+//    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<JsonObject> onFetch() {
         try {
             JsonArray ja = customerService.getAllCustomers();

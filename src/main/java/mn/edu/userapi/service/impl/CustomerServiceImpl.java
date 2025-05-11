@@ -10,7 +10,9 @@ import mn.edu.userapi.service.CustomerService;
 import mn.edu.userapi.util.CryptoUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -92,7 +94,7 @@ public class CustomerServiceImpl implements CustomerService {
         customer.setNationalId(dto.getNationalId());
 
         // Encrypt sensitive data
-        customer.setNationalId(cryptoUtil.encrypt(dto.getNationalId()));
+        customer.setNationalId(cryptoUtil.encrypt_base64(dto.getNationalId()));
 
         logger.info("requestDTO={}, requestCustomer={}", dto, customer);
         return customer;
@@ -118,7 +120,7 @@ public class CustomerServiceImpl implements CustomerService {
         dto.setUserId(customer.getUserId());
 
         // Decrypt sensitive data
-        dto.setNationalId(cryptoUtil.decrypt(customer.getNationalId()));
+        dto.setNationalId(cryptoUtil.decrypt_base64(customer.getNationalId()));
 
         return dto;
     }
@@ -130,10 +132,10 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public void updateCustomer(String id, CustomerDto customerDto) throws Exception {
-        Customer existingCustomer = customerRepository.fetchCustomer(id)
-                .orElseThrow(() -> new Exception("Customer with id " + id + " not found."));
+        Customer existingCustomer = customerRepository.fetchCustomer(id).orElse(null);
+        logger.info("current_user={}", existingCustomer);
 
-        existingCustomer.setNationalId(customerDto.getNationalId());
+        existingCustomer.setNationalId(cryptoUtil.encrypt_base64(customerDto.getNationalId()));
         existingCustomer.setAge(customerDto.getAge());
         existingCustomer.setDistrict(customerDto.getDistrict());
         existingCustomer.setEmail(customerDto.getEmail());
@@ -149,5 +151,47 @@ public class CustomerServiceImpl implements CustomerService {
         existingCustomer.setSurname(customerDto.getSurname());
 
         customerRepository.save(existingCustomer);
+    }
+
+    @Override
+    public boolean checkCustomer(String nat_id) throws Exception {
+        String encrypted_natID = cryptoUtil.encrypt_base64(nat_id);
+        return customerRepository.existsByNationalId(encrypted_natID);
+    }
+
+    @Override
+    public JsonArray searchCustomers(String param) throws Exception {
+        try {
+            List<Customer> customers = customerRepository.searchCustomers(param, cryptoUtil.encrypt_base64(param));
+            JsonArray ja = new JsonArray();
+            for(int i=0; i<customers.size(); i++) {
+                Customer currentCust = customers.get(i);
+                JsonObject jobj = new JsonObject();
+
+                jobj.put("customerId", currentCust.getCustomerId());
+                jobj.put("surname", currentCust.getSurname());
+                jobj.put("firstName", currentCust.getFirstName());
+                jobj.put("dateOfBirth", currentCust.getDateOfBirth());
+                jobj.put("age", currentCust.getAge());
+                jobj.put("gender", currentCust.getGender());
+                jobj.put("phoneNumber", currentCust.getPhoneNumber());
+                jobj.put("email", currentCust.getEmail());
+                jobj.put("province", currentCust.getProvince());
+                jobj.put("district", currentCust.getDistrict());
+                jobj.put("subdistrict", currentCust.getSubdistrict());
+                jobj.put("addressDetail", currentCust.getAddressDetail());
+                jobj.put("profession", currentCust.getProfession());
+                jobj.put("sisiId", currentCust.getSisiId());
+                jobj.put("userId", currentCust.getUserId());
+                jobj.put("nationalId", currentCust.getNationalId());
+
+                ja.add(jobj);
+            }
+
+            return ja;
+        } catch (Exception e) {
+            logger.error("error in search[error={}]", e.getMessage());
+            return null;
+        }
     }
 }

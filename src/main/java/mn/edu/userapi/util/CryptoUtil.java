@@ -58,4 +58,12 @@ public class CryptoUtil {
         generator.initialize(2048);
         return generator.generateKeyPair();
     }
+
+    public String encrypt_base64(String nat_id) throws Exception {
+        return Base64.getUrlEncoder().encodeToString(nat_id.getBytes());
+    }
+
+    public String decrypt_base64(String encrypted_natID) throws Exception {
+        return new String(Base64.getUrlDecoder().decode(encrypted_natID));
+    }
 }

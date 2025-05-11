@@ -22,4 +22,24 @@ public interface CustomerRepository extends JpaRepository<Customer, String> {
 
     @Query("SELECT c FROM Customer c WHERE c.customerId = :id")
     Optional<Customer> fetchCustomer(@Param("id") String id);
+
+    @Query("SELECT COUNT(c) > 0 FROM Customer c WHERE c.nationalId = :id")
+    boolean existsByNationalId(@Param("id") String id);
+
+    @Query("""
+        SELECT c FROM Customer c
+        WHERE LOWER(c.addressDetail) LIKE LOWER(CONCAT('%', :param, '%'))
+           OR LOWER(c.age) LIKE LOWER(CONCAT('%', :param, '%'))
+           OR LOWER(c.district) LIKE LOWER(CONCAT('%', :param, '%'))
+           OR LOWER(c.email) LIKE LOWER(CONCAT('%', :param, '%'))
+           OR LOWER(c.firstName) LIKE LOWER(CONCAT('%', :param, '%'))
+           OR LOWER(c.phoneNumber) LIKE LOWER(CONCAT('%', :param, '%'))
+           OR LOWER(c.surname) LIKE LOWER(CONCAT('%', :param, '%'))
+           OR c.nationalId LIKE CONCAT('%', :nat_id, '%')
+           OR LOWER(c.gender) LIKE LOWER(CONCAT('%', :param, '%'))
+           OR LOWER(c.province) LIKE LOWER(CONCAT('%', :param, '%'))
+           OR LOWER(c.subdistrict) LIKE LOWER(CONCAT('%', :param, '%'))
+           OR LOWER(c.profession) LIKE LOWER(CONCAT('%', :param, '%'))
+    """)
+    List<Customer> searchCustomers(@Param("param") String param, @Param("nat_id") String nat_id);
 }

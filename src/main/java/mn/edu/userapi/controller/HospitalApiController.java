@@ -60,9 +60,19 @@ public class HospitalApiController {
                     required = true,
                     content = @Content(schema = @Schema(implementation = JsonObject.class))
             )
-            @RequestBody JsonObject request) {
-        // This method was not implemented in the original code
-        return null;
+            @RequestBody String parameter) throws Exception {
+        try {
+            JsonArray ja = customerService.searchCustomers(parameter);
+
+            JsonObject resp = new JsonObject();
+            resp.put("code", "200");
+            resp.put("body", ja);
+
+            return ResponseEntity.ok(resp);
+        } catch (Exception e){
+            logger.error("error in search[error={}]", e.getMessage());
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
     @Operation(summary = "ID-аар бүртгэл хийх", description = "Өгөгдсөн ID-аар хэрэглэгчийг бүртгэх")
@@ -71,14 +81,14 @@ public class HospitalApiController {
                     content = @Content(schema = @Schema(implementation = JsonObject.class))),
             @ApiResponse(responseCode = "500", description = "Серверийн алдаа")
     })
-    @PostMapping("/register/{id}")
+    @PostMapping("/register/{sisi_id}")
     public ResponseEntity<JsonObject> onRegisterId(
             @Parameter(description = "Бүртгэх хэрэглэгчийн ID", required = true)
-            @PathVariable String id) throws Exception {
+            @PathVariable String sisi_id) throws Exception {
         try {
             Map<String, String> headers = new HashMap<>();
             headers.put("Content-Type", "application/json");
-            JsonObject jwt = new JsonObject(httpClientUtil.httpRequest("", id, "POST", headers));
+            JsonObject jwt = new JsonObject(httpClientUtil.httpRequest("", sisi_id, "POST", headers));
 
             JsonObject jres = new JsonObject();
             // Process jwt if needed
@@ -99,7 +109,7 @@ public class HospitalApiController {
     @PostMapping("/read/card")
     public ResponseEntity<JsonObject> onReadCardFromGrpc() {
         try {
-            ManagedChannel channel = ManagedChannelBuilder.forAddress("172.25.64.1", 5000)
+            ManagedChannel channel = ManagedChannelBuilder.forAddress("10.3.132.166", 5000)
                     .usePlaintext()
                     .build();
             CardReaderServiceGrpc.CardReaderServiceBlockingStub stub = CardReaderServiceGrpc.newBlockingStub(channel);
@@ -224,6 +234,10 @@ public class HospitalApiController {
             customerDto.setNationalId(request.getNationalId());
 
             logger.info("customerDto={}", customerDto);
+
+            if(customerService.checkCustomer(request.getNationalId())) {
+                return ResponseEntity.badRequest().build();
+            }
 
             if (customerService.saveCustomer(customerDto)) {
                 return ResponseEntity.ok(new JsonObject().put("message", "Customer saved successfully").put("code", "200"));

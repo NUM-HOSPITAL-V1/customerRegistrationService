@@ -16,4 +16,6 @@ public interface CustomerService {
     CustomerDto mapEntityToDto(Customer customer) throws Exception;
     void deleteCustomer(String id) throws Exception;
     void updateCustomer(String id, CustomerDto customerDto) throws Exception;
+    boolean checkCustomer(String nat_id) throws Exception;
+    JsonArray searchCustomers(String param) throws Exception;
 }

@@ -45,7 +45,7 @@
 
 * JWT Bearer Token хэлбэрийн “Authorization: Bearer <token>” header шаардлагатай.
 * API Gateway ашиглан X-User-ID, X-User-Roles header’үүдээр дамжуулж хэрэглэгчийн эрхийг шалгана.
-* Swagger UI ([http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)) руу нэвтрэх үед `/v3/api-docs/**`, `/swagger-ui/**` endpoint-ууд нээлттэй.
+* Swagger UI ([http://54.251.178.246:8080//swagger-ui.html](http://localhost:8080/swagger-ui.html)) руу нэвтрэх үед `/v3/api-docs/**`, `/swagger-ui/**` endpoint-ууд нээлттэй.
 
 ---
 

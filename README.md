@@ -204,23 +204,23 @@
 - **Зорилго:** Шинэ хэрэглэгчийн мэдээллийг системд бүртгэх
 - **Бие (Body):**
   ```json
-  {
-    "surname": "Бат",
-    "firstName": "Болд",
-    "dateOfBirth": "1990-01-01",
-    "age": "35",
-    "gender": "MALE",
-    "phoneNumber": "99112233",
-    "email": "bold@example.com",
-    "province": "Улаанбаатар",
-    "district": "Баянгол",
-    "subdistrict": "1-р хороо",
-    "addressDetail": "23-р байр 5 тоот",
-    "profession": "ENGINEER",
-    "sisiId": "SI123456",
-    "userId": "UI12345",
-    "nationalId": "УД92010199"
-  }
+     {
+       "sisiId": "22b1numbhgu",
+     "surname": "Бат",
+     "firstName": "Болд",
+     "dateOfBirth": "1990-01-01",
+     "age": "35",
+     "gender": "MALE",
+     "phoneNumber": "99112233",
+     "email": "bold@example.com",
+     "province": "Улаанбаатар",
+     "district": "Баянгол",
+     "subdistrict": "1-р хороо",
+     "addressDetail": "23-р байр 5 тоот",
+     "profession": "DOCTOR",
+     "nationalId": "УД92010117",
+     "userId":"1234"
+   }
   ```
 - **Амжилттай хариу (200):**
   ```json
@@ -254,7 +254,7 @@
     "district": "Баянгол",
     "subdistrict": "1-р хороо",
     "addressDetail": "23-р байр 5 тоот",
-    "profession": "ENGINEER",
+    "profession": "DOCTOR",
     "nationalId": "УД92010199"
   }
   ```

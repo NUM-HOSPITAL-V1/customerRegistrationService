@@ -183,7 +183,7 @@ public class CustomerServiceImpl implements CustomerService {
                 jobj.put("profession", currentCust.getProfession());
                 jobj.put("sisiId", currentCust.getSisiId());
                 jobj.put("userId", currentCust.getUserId());
-                jobj.put("nationalId", currentCust.getNationalId());
+                jobj.put("nationalId", cryptoUtil.decrypt_base64(currentCust.getNationalId()));
 
                 ja.add(jobj);
             }

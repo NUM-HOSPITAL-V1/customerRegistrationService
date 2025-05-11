@@ -1,6 +1,6 @@
 ## Ерөнхий танилцуулга
 
-Энэхүү Customer Registration Service нь хэрэглэгчийн бүртгэл, хайлт, засвар, устгал зэрэг үйлдлийг гүйцэтгэх RESTful API интерфейсээр үйлчилдэг. Spring Boot, Spring Security, Swagger/OpenAPI ашиглан бүтээсэн.
+Энэхүү API нь эмнэлгийн системийн хэрэглэгчдийн бүртгэл, мэдээлэл засварлах, хайлт хийх зэрэг үйлдлүүдийг гүйцэтгэх боломжийг олгоно. Мөн картын мэдээллийг gRPC ашиглан унших нэмэлт боломжтой.
 
 ---
 
@@ -36,7 +36,7 @@
 3. Серверийг эхлүүлэх:
 
    ```bash
-   java -jar target/userapi-1.0.jar
+   java -jar target/userapi-0.0.1-SNAPSHOT.jar 
    ```
 
 ---
@@ -53,17 +53,17 @@
 
 | HTTP Method | URL                                         | Тайлбар                             | Шаардлагатай body/headers |
 | ----------- | ------------------------------------------- | ----------------------------------- | ------------------------- |
-| POST        | /customer/registration/search               | Хэрэглэгч текстээр хайлт хийх       | JSON текст (`parameter`)  |
-| POST        | /customer/registration/register/{sisi\_id}  | ID-аар бүртгэл хийх                 | PathVariable: sisi\_id    |
+| POST        | /customer/registration/search               | Хэрэглэгчийн мэдээллийг дурын талбарын утгаар хайх боломжтой       | JSON текст (`parameter`)  |
+| POST        | /customer/registration/register/{sisi\_id}  | Оюутаны үнэмлэхний мэдээллээр хэрэглэгчийг бүртгэх                 | PathVariable: sisi\_id    |
 | POST        | /customer/registration/read/card            | gRPC-ээр карт унших                 | -                         |
 | GET         | /customer/registration/fetch                | Бүх хэрэглэгчийг авах               | -                         |
-| GET         | /customer/registration/fetch/{id}           | ID-аар хэрэглэгч авах               | PathVariable: id          |
+| GET         | /customer/registration/fetch/{id}           | үйлчлүүлэгчийн CustomerID-аар хэрэглэгч авах               | PathVariable: customerId          |
 | POST        | /customer/registration/save/customer        | Шинэ хэрэглэгч бүртгэх              | JSON CustomerDto          |
 | POST        | /customer/registration/create/customer      | Эмчээс хэрэглэгч бүртгэх            | JSON CustomerDto          |
 | POST        | /customer/registration/retrieve             | Регистрийн дугаараас нас, хүйс авах | Raw String (national\_id) |
 | DELETE      | /customer/registration/delete/customer/{id} | Хэрэглэгч устгах                    | PathVariable: id          |
 | POST        | /customer/registration/edit/customer        | Хэрэглэгчийн мэдээлэл засах         | JSON CustomerDto          |
-| POST        | /customer/registration/test                 | Нууцлалын түлхүүр үүсгэх тест       | -                         |
+| POST        | /customer/registration/test                 | тест endpoint       | -                         |
 
 ---
 
@@ -71,66 +71,245 @@
 
 ### 1. Хэрэглэгч хайх
 
-* **URL:** `/customer/registration/search`
+* **URL:** /customer/registration/search
 * **Method:** POST
-* **Request Body:**
+* **Зорилго:** Текстээр хэрэглэгчийн өгөгдлөөс хайлт хийх
+* **Бие (Body):** Хайх текст
+
 
   ```json
-  "Жишээ хайлтын текст"
+  "Мөнх"
   ```
 * **Response (200):**
 
   ```json
+     {
+     "map": {
+       "code": "200",
+       "body": {
+         "list": [
+           {
+             "map": {
+               "customerId": "X531K749Q551",
+               "surname": "Цагаантогоо1",
+               "firstName": "Мөнх-Илд1",
+               "dateOfBirth": "2008-01-01",
+               "age": "17",
+               "gender": "FEMALE",
+               "phoneNumber": "88119900",
+               "email": "example@email.com",
+               "province": "Улаанбаатар",
+               "district": "Сүхбаатар",
+               "subdistrict": "7-р хороо",
+               "addressDetail": "Бага тойруу",
+               "profession": "DOCTOR",
+               "sisiId": "SISI123457675",
+               "userId": "USER123456",
+               "nationalId": "Pz8xMjM0NTY3OA=="
+             },
+             "empty": false
+           }
+         ],
+         "empty": false
+       }
+     },
+     "empty": false
+   }
+``` ```
+### 2. ID-аар бүртгэл хийх
+* **URL:** `/customer/registration/register/{sisi_id}`
+* **Method:** POST
+* **Зорилго:** Өгөгдсөн ID-аар хэрэглэгчийг бүртгэх
+* **URL параметр:** `sisi_id` - Бүртгэх хэрэглэгчийн ID
+* **Амжилттай хариу (200):**
+  ```json
   {
-    "code": "200",
-    "body": [
-      { "customerId": "C001", "surname": "Бат", "firstName": "Эрдэнэ", ... }
-    ]
+    "message": "Бүртгэл амжилттай",
+    "code": "200"
   }
   ```
-
-### 2. Хэрэглэгч бүртгэх (save)
-
-* **URL:** `/customer/registration/save/customer`
-* **Method:** POST
-* **Request Body:**
-
+### 3. Бүх хэрэглэгчийг авах
+- **URL:** `/customer/registration/fetch`
+- **Method:** GET
+- **Зорилго:** Системд бүртгэлтэй бүх хэрэглэгчийн жагсаалтыг авах
+- **Амжилттай хариу (200):**
+   ```json
+   {
+     "map": {
+       "body": {
+         "list": [
+           {
+             "map": {
+               "id": "X531K749Q551",
+               "surname": "Цагаантогоо1",
+               "firstName": "Мөнх-Илд1"
+             },
+             "empty": false
+           },
+           {
+             "map": {
+               "id": "X479J944I154",
+               "surname": "Цагаантогоо2",
+               "firstName": "Мөнх-Илд2"
+             },
+             "empty": false
+           }
+         ],
+         "empty": false
+       },
+       "code": "200"
+     },
+     "empty": false
+   }
+  ```
+### 4. ID-аар хэрэглэгч авах
+- **URL:** `/customer/registration/fetch/{id}`
+- **Method:** GET
+- **Зорилго:** Өгөгдсөн ID-тай хэрэглэгчийн мэдээллийг авах
+- **URL параметр:** `id` - Хэрэглэгчийн ID
+- **Амжилттай хариу (200):**
+  ```json
+     {
+     "map": {
+       "customerId": "X531K749Q551",
+       "surname": "Цагаантогоо1",
+       "firstName": "Мөнх-Илд1",
+       "dateOfBirth": "2008-01-01",
+       "age": "17",
+       "gender": "FEMALE",
+       "phoneNumber": "88119900",
+       "email": "example@email.com",
+       "province": "Улаанбаатар",
+       "district": "Сүхбаатар",
+       "subdistrict": "7-р хороо",
+       "addressDetail": "Бага тойруу",
+       "profession": "DOCTOR",
+       "sisiId": "SISI123457675",
+       "userId": "USER123456",
+       "nationalId": "??12345678"
+     },
+     "empty": false
+   }
+  ```
+- **Хэрэглэгч олдоогүй хариу (204):**
+  ```json
+  {
+    "message": "Тийм ID тай хэрэглэгч олдсонгүй",
+    "code": "204"
+  }
+  ```
+### 5. Хэрэглэгч бүртгэх
+- **URL:** `/customer/registration/save/customer`
+- **Method:** POST
+- **Зорилго:** Шинэ хэрэглэгчийн мэдээллийг системд бүртгэх
+- **Бие (Body):**
   ```json
   {
     "surname": "Бат",
-    "firstName": "Эрдэнэ",
-    "dateOfBirth": "1990-05-12",
+    "firstName": "Болд",
+    "dateOfBirth": "1990-01-01",
     "age": "35",
     "gender": "MALE",
-    "phoneNumber": "99001122",
-    "email": "bat@example.com",
+    "phoneNumber": "99112233",
+    "email": "bold@example.com",
     "province": "Улаанбаатар",
-    "district": "Сүхбаатар",
+    "district": "Баянгол",
     "subdistrict": "1-р хороо",
-    "addressDetail": "17 тоот",
-    "profession": "Doctor",
-    "sisiId": "S123",
-    "userId": "U456",
-    "nationalId": "90051201"
+    "addressDetail": "23-р байр 5 тоот",
+    "profession": "ENGINEER",
+    "sisiId": "SI123456",
+    "userId": "UI12345",
+    "nationalId": "УД92010199"
   }
   ```
-* **Response (200):**
-
+- **Амжилттай хариу (200):**
   ```json
   {
     "message": "Customer saved successfully",
     "code": "200",
-    "customerId": "C002"
+    "customerId": "AB123CD456"
   }
   ```
+- **Бүртгэлтэй хэрэглэгч хариу (400):**
+  ```json
+  {
+    "message": "Тийм регистрийн дугаартай хэрэглэгч бүртгэлтэй байна."
+  }
+  ```
+### 6. Хэрэглэгч эмчээс бүртгэх
+- **URL:** `/customer/registration/create/customer`
+- **Method:** POST
+- **Зорилго:** Шинэ хэрэглэгчийн мэдээллийг эмчээс системд бүртгэх
+- **Бие (Body):**
+  ```json
+  {
+    "surname": "Бат",
+    "firstName": "Болд",
+    "dateOfBirth": "1990-01-01",
+    "age": "35",
+    "gender": "MALE",
+    "phoneNumber": "99112233",
+    "email": "bold@example.com",
+    "province": "Улаанбаатар",
+    "district": "Баянгол",
+    "subdistrict": "1-р хороо",
+    "addressDetail": "23-р байр 5 тоот",
+    "profession": "ENGINEER",
+    "nationalId": "УД92010199"
+  }
+  ```
+- **Амжилттай хариу (200):**
+  ```json
+  {
+    "message": "Customer saved successfully",
+    "code": "200"
+  }
+  ```
+- **Бүртгэлтэй хэрэглэгч хариу (400):**
+  ```json
+  {
+    "message": "Тийм регистрийн дугаартай хэрэглэгч бүртгэлтэй байна."
+  }
+  ```
+### 7. Хэрэглэгч устгах
+- **URL:** `/customer/registration/delete/customer/{id}`
+- **Method :** DELETE
+- **Зорилго:** Хэрэглэгчийн мэдээллийг системээс устгах
+- **URL параметр:** `id` - Хэрэглэгчийн ID
+- **Амжилттай хариу (200):** Хоосон хариу
+- **Хэрэглэгч олдоогүй хариу (404):** Хоосон хариу
 
----
-
+### 8. Хэрэглэгчийн мэдээлэл засах
+- **URL:** `/customer/registration/edit/customer`
+- **Method:** POST
+- **Зорилго:** Систем дэх хэрэглэгчийн мэдээллийг засах
+- **Бие (Body):**
+  ```json
+  {
+    "customerId": "AB123CD456",
+    "surname": "Бат",
+    "firstName": "Болд",
+    "dateOfBirth": "1990-01-01",
+    "age": "35",
+    "gender": "MALE",
+    "phoneNumber": "99112233",
+    "email": "bold@example.com",
+    "province": "Улаанбаатар",
+    "district": "Баянгол",
+    "subdistrict": "1-р хороо",
+    "addressDetail": "23-р байр 5 тоот",
+    "profession": "ENGINEER",
+    "sisiId": "SI123456",
+    "userId": "UI12345",
+    "nationalId": "УД92010199"
+  }
+  ```
+- **Амжилттай хариу (200):** Хоосон хариу
 ## Алдаа болон Статус Кодууд
 
 * `200 OK` – Амжилттай
 * `204 NO CONTENT` – Хайсан ID-тэй хэрэглэгч олдсонгүй
-* `400 Bad Request` – Буруу хүсэлт (например, давтах nationalId)
+* `400 Bad Request` – Буруу хүсэлт (nationalId давхардах)
 * `401 Unauthorized` – Төлөвлөгөө эрхгүй
 * `500 Internal Server Error` – Серверийн алдаа
 
@@ -138,7 +317,7 @@
 
 ## Swagger/OpenAPI
 
-Swagger UI руу нэвтрэх: `http://<host>:<port>/swagger-ui.html`
+Swagger UI руу нэвтрэх: `http://54.251.178.246:8080/swagger-ui/index.html#`
 
 ---
 
@@ -150,5 +329,5 @@ Swagger UI руу нэвтрэх: `http://<host>:<port>/swagger-ui.html`
 
 ---
 
-**Бэлтгэсэн:** \[Таны нэр]
-**Огноо:** 2025-05-12
+**Бэлтгэсэн:** vNodes team members М.Мөнх-Оргил Э.Билгүүн Ц.Нинжбадгар Б.Уранцэцэг
+**Огноо:** 2025-05-11

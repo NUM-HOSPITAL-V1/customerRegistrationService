@@ -312,11 +312,11 @@ public class HospitalApiController {
     public ResponseEntity<?> onRetrieve(
             @RequestBody String national_id) throws Exception {
         try {
-            String month = national_id.substring(4,5);
+            String month = national_id.substring(4,6);
             int month_int = Integer.parseInt(month);
-            String born_year = national_id.substring(2,3);
+            String born_year = national_id.substring(2,4);
             int born_year_int = (month_int > 20) ? 2000 + Integer.parseInt(born_year) : 1900 + Integer.parseInt(born_year);
-            String gender = (Integer.parseInt(national_id.substring(8,8))%2 == 1) ? "MALE" : "FEMALE";
+            String gender = (Integer.parseInt(national_id.substring(8,9))%2 == 1) ? "MALE" : "FEMALE";
 
             int age = LocalDate.now().getYear() - born_year_int;
 

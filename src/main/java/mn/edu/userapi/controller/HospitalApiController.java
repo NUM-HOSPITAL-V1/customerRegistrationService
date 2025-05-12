@@ -49,7 +49,7 @@
         private final HttpClientUtil httpClientUtil;
 
         @Value("${auht.url}")
-        private String authUrl;
+        private String base_url;
 
         @Operation(
                 summary = "Хэрэглэгч хайх",
@@ -250,6 +250,10 @@
                     return ResponseEntity.badRequest().body(new JsonObject().put("message", "Тийм регистрийн дугаартай хэрэглэгч бүртгэлтэй байна."));
                 }
 
+                if(customerService.checkCustomerSisiId(request.getSisiId())) {
+                    return ResponseEntity.badRequest().body(new JsonObject().put("message", "Тийм sisi дугаартай хэрэглэгч бүртгэлтэй байна."));
+                }
+
                 if (customerService.saveCustomer(customerDto)) {
                     return ResponseEntity.ok(new JsonObject().put("message", "Customer saved successfully").put("code", "200").put("customerId", customerId));
                 } else {
@@ -291,6 +295,8 @@
 
                 Map<String, String> headers = new HashMap<>();
                 headers.put("Content-Type", "application/json");
+
+                String authUrl = base_url + "/auth/register";
 
                 String authResp = httpClientUtil.httpRequest(authUrl, body.toString(), "POST", headers);
 
@@ -391,5 +397,60 @@
                     .put("private", privateKeyStr);
 
             return ResponseEntity.ok(jwt);
+        }
+
+        @Operation(summary = "Хэрэглэгчийн Role авах", description = "Хэрэглэгчийн ID аар тухайн хэрэглэгчийн Role ийг авах")
+        @ApiResponses({
+                @ApiResponse(responseCode = "200", description = "Амжилттай",
+                        content = @Content(schema = @Schema(implementation = JsonObject.class))),
+                @ApiResponse(responseCode = "500", description = "Серверийн алдаа")
+        })
+        @GetMapping("/fetch/role/{id}")
+        public ResponseEntity<JsonObject> onFetchRole(
+                @PathVariable String id
+        ) throws Exception {
+            try {
+                String userId = customerService.getUserId(id);
+
+                String fetchUrl = base_url + "/auth/register";
+                JsonObject body = new JsonObject();
+
+                Map<String,String> headers = new HashMap<>();
+                headers.put("Content-Type", "application/json");
+                JsonObject jresp = new JsonObject(httpClientUtil.httpRequest(fetchUrl, body.toString(), "POST", headers));
+
+                return ResponseEntity.ok(jresp);
+            } catch (Exception e) {
+                logger.error("error in fetchRole[error={}]",e.getMessage());
+                return ResponseEntity.internalServerError().build();
+            }
+        }
+
+        @Operation(summary = "Хэрэглэгчийн Role засах", description = "Хэрэглэгчийн Role-ийг тухайн хэрэглэгчийн ID-г ашиглан авах")
+        @ApiResponses({
+                @ApiResponse(responseCode = "200", description = "Амжилттай хэрэглэгчийн Role-ийг заслаа",
+                        content = @Content(schema = @Schema(implementation = JsonObject.class))),
+                @ApiResponse(responseCode = "500", description = "Серверийн алдаа")
+        })
+        @PostMapping("/edit/role/{id}")
+        public ResponseEntity<JsonObject> onEditRole(
+                @PathVariable String id,
+                @RequestBody JsonObject request
+        ) throws Exception {
+            try {
+                String userId = customerService.getUserId(id);
+
+                String editUrl = base_url + "";
+                JsonObject body = new JsonObject();
+
+                Map<String, String> headers = new HashMap<>();
+                headers.put("Content-Type", "application/json");
+                JsonObject jresp = new JsonObject(httpClientUtil.httpRequest(editUrl, body.toString(), "POST", headers));
+
+                return ResponseEntity.ok(new JsonObject().put("message", "Хэрэглэгчийн Role ийг амжилттай заслаа."));
+            } catch (Exception e) {
+                logger.error("error in editRole[error={}]",e.getMessage());
+                return ResponseEntity.internalServerError().build();
+            }
         }
     }

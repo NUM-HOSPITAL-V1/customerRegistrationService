@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @Service
@@ -38,7 +39,8 @@ public class CustomerServiceImpl implements CustomerService {
             for (Object[] obj : customerData) {
                 JsonObject jobj = new JsonObject();
 
-                jobj.put("id", obj[0] != null ? obj[0].toString() : "");
+                jobj.put("customerid", obj[0] != null ? obj[0].toString() : "");
+                jobj.put("userId", obj[3] != null ? obj[3].toString() : "");
                 jobj.put("surname", obj[1] != null ? obj[1].toString() : "");
                 jobj.put("firstName", obj[2] != null ? obj[2].toString() : "");
 
@@ -193,5 +195,15 @@ public class CustomerServiceImpl implements CustomerService {
             logger.error("error in search[error={}]", e.getMessage());
             return null;
         }
+    }
+
+    @Override
+    public boolean checkCustomerSisiId(String sisiID) throws Exception {
+        return customerRepository.existsBySisiId(sisiID);
+    }
+
+    @Override
+    public String getUserId(String id) throws Exception {
+        return customerRepository.getUserId(id);
     }
 }

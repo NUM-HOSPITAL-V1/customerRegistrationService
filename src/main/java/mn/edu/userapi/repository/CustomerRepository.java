@@ -17,14 +17,17 @@ public interface CustomerRepository extends JpaRepository<Customer, String> {
     String createCustomerId();
     // [A-Z][000-999][A-Z][000-999][A-Z][000-999]
 
-    @Query("SELECT c.customerId, c.surname, c.firstName FROM Customer c")
+    @Query("SELECT c.customerId, c.surname, c.firstName, c.userId FROM Customer c")
     List<Object[]> fetchAllCustomers();
 
-    @Query("SELECT c FROM Customer c WHERE c.customerId = :id")
+    @Query("SELECT c FROM Customer c WHERE c.customerId = :id OR c.userId = :id")
     Optional<Customer> fetchCustomer(@Param("id") String id);
 
     @Query("SELECT COUNT(c) > 0 FROM Customer c WHERE c.nationalId = :id")
     boolean existsByNationalId(@Param("id") String id);
+
+    @Query("SELECT COUNT(c) > 0 FROM Customer c WHERE c.sisiId = :sisiId")
+    boolean existsBySisiId(@Param("sisiId") String sisiId);
 
     @Query("""
         SELECT c FROM Customer c
@@ -42,4 +45,7 @@ public interface CustomerRepository extends JpaRepository<Customer, String> {
            OR LOWER(c.profession) LIKE LOWER(CONCAT('%', :param, '%'))
     """)
     List<Customer> searchCustomers(@Param("param") String param, @Param("nat_id") String nat_id);
+
+    @Query("SELECT c.userId FROM Customer c WHERE c.userId = :id OR c.customerId = :id")
+    String getUserId(@Param("id") String id);
 }

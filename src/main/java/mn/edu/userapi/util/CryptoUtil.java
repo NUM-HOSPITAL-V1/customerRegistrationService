@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.Cipher;
+import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
@@ -64,6 +65,6 @@ public class CryptoUtil {
     }
 
     public String decrypt_base64(String encrypted_natID) throws Exception {
-        return new String(Base64.getUrlDecoder().decode(encrypted_natID));
+        return new String(Base64.getUrlDecoder().decode(encrypted_natID), StandardCharsets.UTF_8);
     }
 }

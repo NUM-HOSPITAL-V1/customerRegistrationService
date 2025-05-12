@@ -18,4 +18,6 @@ public interface CustomerService {
     void updateCustomer(String id, CustomerDto customerDto) throws Exception;
     boolean checkCustomer(String nat_id) throws Exception;
     JsonArray searchCustomers(String param) throws Exception;
+    boolean  checkCustomerSisiId(String sisiId) throws Exception;
+    String getUserId(String id) throws Exception;
 }

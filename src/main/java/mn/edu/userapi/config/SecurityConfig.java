@@ -32,6 +32,7 @@
                                     /** Одоохондоо бүх хаанаас хандаж болохоор байгаа бүгд api-gateway
                                      * auth ашиглаад эхлэхээр зөвхөн gateway ээр дамжина */
                                     "/customer/registration/**", //бүгд api-gateway ашиглах үед үүнийг устган болгоно
+                                            "/internal/customers/**",
                                             "/v3/api-docs/**",
                                             "/api-docs/**",
                                             "/swagger-ui/**",

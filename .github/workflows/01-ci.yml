@@ -1,0 +1,26 @@
+name: CI (Customer Registration Service)
+run-name: "CI | ${{ github.event_name }} | ${{ github.ref_name }}"
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      - name: Run Maven tests
+        run: |
+          chmod +x mvnw
+          ./mvnw -B test

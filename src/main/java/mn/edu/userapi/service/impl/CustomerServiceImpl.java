@@ -16,6 +16,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 @RequiredArgsConstructor
@@ -27,7 +28,12 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public String createCustomerId() {
-        return customerRepository.createCustomerId();
+        try {
+            return customerRepository.createCustomerId();
+        } catch (Exception e) {
+            logger.warn("Falling back to generated customer ID because DB function is unavailable: {}", e.getMessage());
+            return generateFallbackCustomerId();
+        }
     }
 
     @Override
@@ -205,5 +211,25 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public String getUserId(String id) throws Exception {
         return customerRepository.getUserId(id);
+    }
+
+    private String generateFallbackCustomerId() {
+        return "" +
+                randomUppercase() + randomDigits(3) +
+                randomUppercase() + randomDigits(3) +
+                randomUppercase() + randomDigits(3);
+    }
+
+    private String randomUppercase() {
+        int offset = ThreadLocalRandom.current().nextInt(26);
+        return String.valueOf((char) ('A' + offset));
+    }
+
+    private String randomDigits(int count) {
+        StringBuilder builder = new StringBuilder(count);
+        for (int i = 0; i < count; i++) {
+            builder.append(ThreadLocalRandom.current().nextInt(10));
+        }
+        return builder.toString();
     }
 }
